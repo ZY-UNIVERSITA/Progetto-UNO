@@ -60,7 +60,7 @@ def join_game(lobby_id):
         lobby_data["players"].append(player)
         redis_client.set(lobby_id, json.dumps(lobby_data))
         
-        socketio.emit("Player join", {"player": player}, room = lobby_id)
+        socketio.emit("player_joined", {"player": player}, room=lobby_id)
 
         return jsonify({"lobby_id": lobby_id}), 200
     except Exception as e:
