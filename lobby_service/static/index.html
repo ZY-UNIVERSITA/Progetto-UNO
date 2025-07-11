@@ -7,25 +7,36 @@
 <body>
   <h1>🎮 Sistema di Lobby in Tempo Reale</h1>
 
-  <h2>Crea una Lobby</h2>
-  <form id="createLobbyForm">
+  <!-- Sezione: Crea Lobby -->
+  <div id="createLobbyForm">
+    <h2>Crea una Lobby</h2>
     <label>Impostazioni:</label><br>
+    <label>Player name:</label><br>
+    <input type="text" id="playerName"><br>
     <input type="text" id="settings" placeholder='{"mode":"arcade"}'><br>
     <button type="submit">Crea</button>
-  </form>
+  </div>
 
-  <h2>Join Lobby</h2>
-  <form id="joinLobbyForm">
+  <!-- Sezione: Join Lobby -->
+  <div id="joinLobbyForm">
+    <h2>Join Lobby</h2>
     <label>ID Lobby:</label><br>
     <input type="text" id="lobbyId"><br>
     <label>Giocatore:</label><br>
     <input type="text" id="playerName"><br>
     <button type="submit">Join</button>
-  </form>
+  </div>
 
-  <h2>Giocatori nella Lobby</h2>
-  <ul id="playerList"></ul>
+  <!-- Sezione: Lobby Attiva -->
+  <div id="lobbySection" style="display:none">
+    <h2>Lobby ID: <span id="lobbyCodeDisplay"></span></h2>
+    <h3>Giocatori nella Lobby</h3>
+    <ul id="playerList"></ul>
+    <button id="startGameButton" style="display:none">Start Game</button>
+    <button id="leaveLobbyButton">Lascia Lobby</button>
+  </div>
 
+  <!-- Socket.IO client -->
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
 
   <script>
@@ -33,47 +44,89 @@
     const socket = io(apiBase);
 
     let currentLobbyId = null;
-    const playerList = document.getElementById("playerList");
+    let token = null;
 
-    // Crea lobby via REST
-    document.getElementById("createLobbyForm").addEventListener("submit", async (e) => {
+    const playerList = document.getElementById("playerList");
+    const lobbySection = document.getElementById("lobbySection");
+    const lobbyCodeDisplay = document.getElementById("lobbyCodeDisplay");
+    const startButton = document.getElementById("startGameButton");
+    const leaveButton = document.getElementById("leaveLobbyButton");
+    const createForm = document.getElementById("createLobbyForm");
+    const joinForm = document.getElementById("joinLobbyForm");
+
+    // Funzione per entrare nella lobby
+    function enterLobby(lobbyId, isCreator = false) {
+      currentLobbyId = lobbyId;
+      lobbyCodeDisplay.innerText = lobbyId;
+      lobbySection.style.display = "block";
+      createForm.style.display = "none";
+      joinForm.style.display = "none";
+      startButton.style.display = isCreator ? "inline-block" : "none";
+      playerList.innerHTML = "";
+    }
+
+    function saveToken(token) {
+      this.token = token
+    }
+
+    // Crea lobby
+    createForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const settings = document.getElementById("settings").value;
+      const player = document.getElementById("playerName").value;
       const res = await fetch(`${apiBase}/games`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {} })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {}, player })
       });
       const data = await res.json();
-      currentLobbyId = data.lobby_id;
-      socket.emit("join_room", { game_id: currentLobbyId });
+      socket.emit("join_room", { game_id: data.lobby_id });
+      enterLobby(data.lobby_id, true);
+      saveToken(data.token)
     });
 
-    // Join lobby via REST + WebSocket
-    document.getElementById("joinLobbyForm").addEventListener("submit", async (e) => {
+    // Join lobby
+    joinForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const lobbyId = document.getElementById("lobbyId").value;
       const player = document.getElementById("playerName").value;
       const res = await fetch(`${apiBase}/games/${lobbyId}/join`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ player })
       });
       const data = await res.json();
-      currentLobbyId = lobbyId;
-      socket.emit("join_room", { game_id: currentLobbyId });
+      socket.emit("join_room", { game_id: lobbyId });
+      enterLobby(lobbyId);
+      saveToken(data.token)
     });
 
-    // Ricevi evento quando qualcuno entra nella stanza
+    // Quando un giocatore entra
     socket.on("player_joined", (data) => {
       const li = document.createElement("li");
       li.innerText = data.player;
       playerList.appendChild(li);
     });
 
-    // Conferma di ingresso nella room
+    // Conferma di ingresso nella stanza
     socket.on("joined_room", (data) => {
       console.log(`Entrato nella stanza: ${data.room}`);
+    });
+
+    // Avvia gioco
+    startButton.addEventListener("click", () => {
+      socket.emit("start_game", { game_id: currentLobbyId });
+      alert("🎮 Gioco avviato!");
+    });
+
+    // Lascia lobby
+    leaveButton.addEventListener("click", () => {
+      location.reload();
+    });
+
+    // Ricevi avvio gioco dal server
+    socket.on("game_started", (data) => {
+      alert(`🚀 Partita iniziata nella lobby: ${data.game_id}`);
     });
   </script>
 </body>
