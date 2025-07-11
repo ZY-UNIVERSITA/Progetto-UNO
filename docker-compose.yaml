@@ -4,7 +4,7 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - redis
+      - redis_service
 
   # game_engine:
   #   build: ./game_engine
