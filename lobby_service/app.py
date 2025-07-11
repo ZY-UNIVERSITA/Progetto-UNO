@@ -63,7 +63,8 @@ def join_game(lobby_id):
         socketio.emit("Player join", {"player": player}, room = lobby_id)
 
         return jsonify({"lobby_id": lobby_id}), 200
-    except:
+    except Exception as e:
+        app.logger.info(f"Error: {e}")
         return jsonify({}), 404
 
 if __name__ == '__main__':
