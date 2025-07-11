@@ -13,6 +13,6 @@ services:
   #   depends_on:
   #     - redis
 
-  redis:
+  redis_service:
     image: "redis:alpine"
   

@@ -12,7 +12,7 @@ WAITING = "waiting"
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-redis_client = redis.Redis(host=redis, port=6379, db=0)
+redis_client = redis.Redis(host="redis_service", port=6379, db=0)
 
 socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")
 
