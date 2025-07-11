@@ -48,6 +48,8 @@ def crete_game():
 
     redis_client.set(lobby_id, json.dumps(lobby_data))
 
+    app.logger.info(f"Player create lobby: {lobby_id}")
+
     return jsonify({"lobby_id": lobby_id}), 201
 
 @app.route("/games/<lobby_id>/join", methods=["POST"])
