@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Lobby Multiplayer WebSocket</title>
+</head>
+<body>
+  <h1>🎮 Sistema di Lobby in Tempo Reale</h1>
+
+  <h2>Crea una Lobby</h2>
+  <form id="createLobbyForm">
+    <label>Impostazioni:</label><br>
+    <input type="text" id="settings" placeholder='{"mode":"arcade"}'><br>
+    <button type="submit">Crea</button>
+  </form>
+
+  <h2>Join Lobby</h2>
+  <form id="joinLobbyForm">
+    <label>ID Lobby:</label><br>
+    <input type="text" id="lobbyId"><br>
+    <label>Giocatore:</label><br>
+    <input type="text" id="playerName"><br>
+    <button type="submit">Join</button>
+  </form>
+
+  <h2>Giocatori nella Lobby</h2>
+  <ul id="playerList"></ul>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+
+  <script>
+    const apiBase = "http://lobby_service:5000";
+    const socket = io(apiBase);
+
+    let currentLobbyId = null;
+    const playerList = document.getElementById("playerList");
+
+    // Crea lobby via REST
+    document.getElementById("createLobbyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const settings = document.getElementById("settings").value;
+      const res = await fetch(`${apiBase}/games`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {} })
+      });
+      const data = await res.json();
+      currentLobbyId = data.game_id;
+      socket.emit("join_room", { game_id: currentLobbyId });
+    });
+
+    // Join lobby via REST + WebSocket
+    document.getElementById("joinLobbyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const lobbyId = document.getElementById("lobbyId").value;
+      const player = document.getElementById("playerName").value;
+      const res = await fetch(`${apiBase}/games/${lobbyId}/join`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ player })
+      });
+      const data = await res.json();
+      currentLobbyId = lobbyId;
+      socket.emit("join_room", { game_id: currentLobbyId });
+    });
+
+    // Ricevi evento quando qualcuno entra nella stanza
+    socket.on("player_joined", (data) => {
+      const li = document.createElement("li");
+      li.innerText = data.player;
+      playerList.appendChild(li);
+    });
+
+    // Conferma di ingresso nella room
+    socket.on("joined_room", (data) => {
+      console.log(`Entrato nella stanza: ${data.room}`);
+    });
+  </script>
+</body>
+</html>
