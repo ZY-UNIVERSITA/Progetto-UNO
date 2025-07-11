@@ -12,7 +12,7 @@
     <h2>Crea una Lobby</h2>
     <label>Impostazioni:</label><br>
     <label>Player name:</label><br>
-    <input type="text" id="playerName"><br>
+    <input type="text" id="playerNameCreate"><br>
     <input type="text" id="settings" placeholder='{"mode":"arcade"}'><br>
     <button type="submit">Crea</button>
   </div>
@@ -73,7 +73,7 @@
     createForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const settings = document.getElementById("settings").value;
-      const player = document.getElementById("playerName").value;
+      const player = document.getElementById("playerNameCreate").value;
       const res = await fetch(`${apiBase}/games`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
