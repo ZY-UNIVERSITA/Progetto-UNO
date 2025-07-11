@@ -6,6 +6,8 @@ import json
 from flask_socketio import SocketIO, join_room, emit
 import jwt
 import datetime
+import jwt
+import cryptography
 
 WAITING: str = "waiting"
 MIN_PLAYERS: int = 2
@@ -17,6 +19,7 @@ redis_client = redis.Redis(host="redis_service", port=6379, db=0)
 
 socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")
 
+print(cryptography.__version__)
 def load_private_key(path='private_key.pem'):
     with open(path, 'r') as file:
         return file.read()
