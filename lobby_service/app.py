@@ -55,7 +55,8 @@ def crete_game():
 @app.route("/games/<lobby_id>/join", methods=["POST"])
 def join_game(lobby_id):
     try:
-        lobby_data = redis_client.get(lobby_id)
+        lobby_data_raw = redis_client.get(lobby_id)
+        lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
 
         app.logger.info(f"Lobby info: {lobby_data}")
 
@@ -68,7 +69,7 @@ def join_game(lobby_id):
         return jsonify({"lobby_id": lobby_id}), 200
     except Exception as e:
         app.logger.info(f"Error: {e}")
-        return jsonify({}), 404
+        return jsonify({}), 500
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
