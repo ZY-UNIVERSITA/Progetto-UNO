@@ -4,14 +4,14 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      redis
+      - redis
 
   # game_engine:
   #   build: ./game_engine
   #   ports:
   #     - "5001:5001"
   #   depends_on:
-  #     redis
+  #     - redis
 
   redis:
     image: "redis:alpine"
