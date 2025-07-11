@@ -14,7 +14,7 @@ app.logger.setLevel(logging.INFO)
 
 redis_client = redis.Redis(host=redis, port=6379, db=0)
 
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:5000")
+socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")
 
 @socketio.on("connect")
 def handle_connect():
