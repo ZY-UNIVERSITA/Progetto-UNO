@@ -56,6 +56,9 @@ def crete_game():
 def join_game(lobby_id):
     try:
         lobby_data = redis_client.get(lobby_id)
+
+        app.logger.info(f"Lobby info: {lobby_data}")
+
         player = request.json.get("player")
         lobby_data["players"].append(player)
         redis_client.set(lobby_id, json.dumps(lobby_data))
