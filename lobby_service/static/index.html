@@ -65,8 +65,8 @@
       playerList.innerHTML = "";
     }
 
-    function saveToken(token) {
-      this.token = token
+    function saveToken(newToken) {
+      token = newToken
     }
 
     // Crea lobby
@@ -77,7 +77,7 @@
       const res = await fetch(`${apiBase}/games`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {}, player })
+        body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {}, player: player })
       });
       const data = await res.json();
       socket.emit("join_room", { game_id: data.lobby_id });
