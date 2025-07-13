@@ -45,9 +45,12 @@ def handle_start_game(data):
     emit("game_started", {"game_id": game_id}, room=game_id)
 
     try:
-        app.logger.info(f"Search for data to sent: {lobby_data}")
+        app.logger.info(f"Search for data to sent")
         
         lobby_data_raw = redis_client.get(game_id)
+
+        app.logger.info(f"data: {lobby_data_raw}")
+
         lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
         
         app.logger.info(f"Lobby data to sent: {lobby_data}")
