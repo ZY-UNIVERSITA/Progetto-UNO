@@ -48,6 +48,8 @@ def handle_start_game(data):
         lobby_data_raw = redis_client.get(game_id)
         lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
         
+        app.logger.info(f"Lobby data to sent: {lobby_data}")
+
         redis_client.xadd(GAME_START_STREAM, lobby_data)
 
         app.logger.info("Data sent")
@@ -75,7 +77,7 @@ def crete_game():
     lobby_data = {
         "lobby_id": lobby_id,
         "state": WAITING,
-        "players": [],
+        "players": [ player ],
         "settings": settings.get("settings", {}),
     }
 
@@ -102,7 +104,7 @@ def join_game(lobby_id):
         lobby_data["players"].append(player)
         redis_client.set(lobby_id, json.dumps(lobby_data))
 
-        socketio.emit("player_joined", {"players": player}, room=lobby_id)
+        socketio.emit("player_joined", {"players": lobby_data["players"]}, room=lobby_id)
 
         token = generate_token(player, lobby_id)
 
