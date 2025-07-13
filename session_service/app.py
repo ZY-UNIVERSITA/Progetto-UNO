@@ -14,14 +14,16 @@ except redis.exceptions.ResponseError:
     pass
 
 def process_game(data):
-    lobby_id = data['lobby_id']
-    players = json.loads(data['players'])
+    data_json = json.loads(data)
+    lobby_id = data_json['lobby_id']
+    players = data_json['players']
     print(f"Avvio partita per lobby {lobby_id} con giocatori {players}")
 
 while True:
     messages = redis_client.xreadgroup(GROUP_NAME, CONSUMER_NAME, {STREAM_NAME: '>'}, count=1, block=30000)
     for stream, msgs in messages:
         for msg_id, msg_data in msgs:
+            print("messages arrived")
             process_game(msg_data)
             redis_client.xack(STREAM_NAME, GROUP_NAME, msg_id)
 
