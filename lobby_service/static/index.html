@@ -103,9 +103,15 @@
 
     // Quando un giocatore entra
     socket.on("player_joined", (data) => {
-      const li = document.createElement("li");
-      li.innerText = data.player;
-      playerList.appendChild(li);
+      let players = data.players
+      
+      playerList.innerHTML = '';
+
+      players.forEach(player => {
+        const li = document.createElement("li");
+        li.innerText = player;
+        playerList.appendChild(li);
+      })
     });
 
     // Conferma di ingresso nella stanza

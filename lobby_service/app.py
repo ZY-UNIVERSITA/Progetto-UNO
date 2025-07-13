@@ -20,6 +20,7 @@ redis_client = redis.Redis(host="redis_service", port=6379, db=0)
 socketio = SocketIO(app, cors_allowed_origins="http://127.0.0.1:5000")
 
 print(cryptography.__version__)
+
 def load_private_key(path='private_key.pem'):
     with open(path, 'r') as file:
         return file.read()
@@ -35,7 +36,6 @@ def handle_join_room(data):
     game_id = data["game_id"]
     join_room(game_id)
     emit("joined_room", {"room": game_id})
-
 
 @socketio.on("start_game")
 def handle_start_game(data):
@@ -70,6 +70,8 @@ def crete_game():
 
     token = generate_token(player, lobby_id)
 
+    socketio.emit("player_joined", {"players": player}, room=lobby_id)
+    
     app.logger.info(f"Player create lobby: {lobby_id}")
 
     return jsonify({"lobby_id": lobby_id, "token": token}), 201
@@ -87,7 +89,7 @@ def join_game(lobby_id):
         lobby_data["players"].append(player)
         redis_client.set(lobby_id, json.dumps(lobby_data))
 
-        socketio.emit("player_joined", {"player": player}, room=lobby_id)
+        socketio.emit("player_joined", {"players": player}, room=lobby_id)
 
         token = generate_token(player, lobby_id)
 
@@ -95,6 +97,7 @@ def join_game(lobby_id):
     except Exception as e:
         app.logger.info(f"Error: {e}")
         return jsonify({}), 500
+
 
 def generate_token(username: str, lobby_id: str):
     payload = {
