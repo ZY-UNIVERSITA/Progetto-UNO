@@ -41,7 +41,7 @@ def handle_join_room(data):
     lobby_data_raw = redis_client.get(lobby_id)
     lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
 
-    emit("player_joined", "player_joined", {"players": lobby_data["players"]}, room=lobby_id)
+    emit("player_joined", {"players": lobby_data["players"]}, room=lobby_id)
 
 @socketio.on("start_game")
 def handle_start_game(data):
