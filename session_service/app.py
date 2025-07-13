@@ -20,9 +20,12 @@ except redis.exceptions.ResponseError:
 
 def process_game(data):
     if not data is None:
-        data_json = json.loads(data.decode("utf-8"))
-        lobby_id = data_json['lobby_id']
-        players = data_json['players']
+        payload_raw = data[b'payload']
+        payload = payload_raw.decode("utf-8")
+        payload_json = json.loads(payload)
+
+        lobby_id = payload_json['lobby_id']
+        players = payload_json['players']
         logging.info(f"Avvio partita per lobby {lobby_id} con giocatori {players}")
 
 while True:
