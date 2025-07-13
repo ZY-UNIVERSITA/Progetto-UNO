@@ -45,6 +45,8 @@ def handle_start_game(data):
     emit("game_started", {"game_id": game_id}, room=game_id)
 
     try:
+        app.logger.info(f"Search for data to sent: {lobby_data}")
+        
         lobby_data_raw = redis_client.get(game_id)
         lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
         
@@ -85,7 +87,7 @@ def crete_game():
 
     token = generate_token(player, lobby_id)
 
-    socketio.emit("player_joined", {"players": player}, room=lobby_id)
+    socketio.emit("player_joined", {"players": lobby_data["players"]}, room=lobby_id)
     
     app.logger.info(f"Player create lobby: {lobby_id}")
 
