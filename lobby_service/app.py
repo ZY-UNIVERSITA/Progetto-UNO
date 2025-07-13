@@ -44,6 +44,14 @@ def handle_start_game(data):
     game_id = data["game_id"]
     emit("game_started", {"game_id": game_id}, room=game_id)
 
+    try:
+        lobby_data_raw = redis_client.get(game_id)
+        lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
+        
+        redis_client.xadd(GAME_START_STREAM, lobby_data)
+    except Exception as e:
+        app.logger.info(f"Error: {e}")
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -100,16 +108,6 @@ def join_game(lobby_id):
     except Exception as e:
         app.logger.info(f"Error: {e}")
         return jsonify({}), 500
-
-@app.route("/games/<lobby_id>/start", methods=["POST"])
-def start_game(lobby_id):
-    try:
-        lobby_data_raw = redis_client.get(lobby_id)
-        lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
-        
-        redis_client.xadd(GAME_START_STREAM, lobby_data)
-    except Exception as e:
-        app.logger.info(f"Error: {e}")
 
 def generate_token(username: str, lobby_id: str):
     payload = {
