@@ -19,10 +19,11 @@ except redis.exceptions.ResponseError:
     pass
 
 def process_game(data):
-    data_json = json.loads(data)
-    lobby_id = data_json['lobby_id']
-    players = data_json['players']
-    logging.info(f"Avvio partita per lobby {lobby_id} con giocatori {players}")
+    if not data is None:
+        data_json = json.loads(data)
+        lobby_id = data_json['lobby_id']
+        players = data_json['players']
+        logging.info(f"Avvio partita per lobby {lobby_id} con giocatori {players}")
 
 while True:
     messages = redis_client.xreadgroup(GROUP_NAME, CONSUMER_NAME, {STREAM_NAME: '>'}, count=1, block=30000)
