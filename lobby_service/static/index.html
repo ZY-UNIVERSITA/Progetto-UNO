@@ -105,6 +105,8 @@
     socket.on("player_joined", (data) => {
       let players = data.players
       
+      console.log(players)
+
       playerList.innerHTML = '';
 
       players.forEach(player => {
