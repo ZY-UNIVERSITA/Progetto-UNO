@@ -10,7 +10,7 @@ services:
     build: ./session_service
     ports:
       - "5001:5001"
-    depends:on:
+    depends_on:
       -reside_service
 
   # game_engine:
