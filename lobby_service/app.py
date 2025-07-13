@@ -12,6 +12,8 @@ import cryptography
 WAITING: str = "waiting"
 MIN_PLAYERS: int = 2
 
+GAME_START_STREAM: str = "game_start_stream"
+
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
@@ -61,6 +63,7 @@ def crete_game():
     settings = request.json
 
     lobby_data = {
+        "lobby_id": lobby_id,
         "state": WAITING,
         "players": [],
         "settings": settings.get("settings", {}),
@@ -98,6 +101,15 @@ def join_game(lobby_id):
         app.logger.info(f"Error: {e}")
         return jsonify({}), 500
 
+@app.route("/games/<lobby_id>/start", methods=["POST"])
+def start_game(lobby_id):
+    try:
+        lobby_data_raw = redis_client.get(lobby_id)
+        lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
+        
+        redis_client.xadd(GAME_START_STREAM, lobby_data)
+    except Exception as e:
+        app.logger.info(f"Error: {e}")
 
 def generate_token(username: str, lobby_id: str):
     payload = {
