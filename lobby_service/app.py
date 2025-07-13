@@ -49,6 +49,8 @@ def handle_start_game(data):
         lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
         
         redis_client.xadd(GAME_START_STREAM, lobby_data)
+
+        app.logger.info("Data sent")
     except Exception as e:
         app.logger.info(f"Error: {e}")
 
