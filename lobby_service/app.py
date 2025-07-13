@@ -35,9 +35,13 @@ def handle_connect():
 
 @socketio.on("join_room")
 def handle_join_room(data):
-    game_id = data["game_id"]
-    join_room(game_id)
-    emit("joined_room", {"room": game_id})
+    lobby_id = data["lobby_id"]
+    join_room(lobby_id)
+
+    lobby_data_raw = redis_client.get(lobby_id)
+    lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
+
+    emit("player_joined", "player_joined", {"players": lobby_data["players"]}, room=lobby_id)
 
 @socketio.on("start_game")
 def handle_start_game(data):
@@ -45,19 +49,8 @@ def handle_start_game(data):
     emit("game_started", {"game_id": game_id}, room=game_id)
 
     try:
-        app.logger.info(f"Search for data to sent")
-        
         lobby_data_raw = redis_client.get(game_id)
-
-        app.logger.info(f"data: {lobby_data_raw}")
-
-        lobby_data = json.loads(lobby_data_raw.decode("utf-8"))
-        
-        app.logger.info(f"Lobby data to sent: {lobby_data}")
-
-        redis_client.xadd(GAME_START_STREAM, lobby_data)
-
-        app.logger.info("Data sent")
+        redis_client.xadd(GAME_START_STREAM, { "payload": lobby_data_raw} )
     except Exception as e:
         app.logger.info(f"Error: {e}")
 
@@ -90,8 +83,6 @@ def crete_game():
 
     token = generate_token(player, lobby_id)
 
-    socketio.emit("player_joined", {"players": lobby_data["players"]}, room=lobby_id)
-    
     app.logger.info(f"Player create lobby: {lobby_id}")
 
     return jsonify({"lobby_id": lobby_id, "token": token}), 201
@@ -108,8 +99,6 @@ def join_game(lobby_id):
         player = request.json.get("player")
         lobby_data["players"].append(player)
         redis_client.set(lobby_id, json.dumps(lobby_data))
-
-        socketio.emit("player_joined", {"players": lobby_data["players"]}, room=lobby_id)
 
         token = generate_token(player, lobby_id)
 

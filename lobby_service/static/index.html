@@ -80,7 +80,7 @@
         body: JSON.stringify({ settings: settings ? JSON.parse(settings) : {}, player: player })
       });
       const data = await res.json();
-      socket.emit("join_room", { game_id: data.lobby_id });
+      socket.emit("join_room", { lobby_id: data.lobby_id });
       enterLobby(data.lobby_id, true);
       saveToken(data.token)
     });
@@ -96,7 +96,7 @@
         body: JSON.stringify({ player })
       });
       const data = await res.json();
-      socket.emit("join_room", { game_id: lobbyId });
+      socket.emit("join_room", { lobby_id: lobbyId });
       enterLobby(lobbyId);
       saveToken(data.token)
     });
@@ -114,11 +114,6 @@
         li.innerText = player;
         playerList.appendChild(li);
       })
-    });
-
-    // Conferma di ingresso nella stanza
-    socket.on("joined_room", (data) => {
-      console.log(`Entrato nella stanza: ${data.room}`);
     });
 
     // Avvia gioco
